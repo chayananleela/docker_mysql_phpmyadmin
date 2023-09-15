@@ -1,0 +1,46 @@
+version: "3"
+
+services:
+  mysqlserver:
+    image: mysql:8.0
+    container_name: mysqlserver
+    restart: unless-stopped
+    volumes:
+      - ./data/data_mysql:/var/lib/mysql
+    ports:
+      - 3306:3306
+    environment:
+      - MYSQL_ROOT_PASSWORD=333333
+      - TZ=Asia/Bangkok
+    command: mysqld --sql_mode="" --character-set-server=utf8 --collation-server=utf8_slovenian_ci --init-connect='SET NAMES UTF8;' --innodb-flush-log-at-trx-commit=0
+
+  web_server:
+    image: pjaun/php:7.4-apache
+    container_name: web_server
+    restart: unless-stopped
+    volumes:
+      - ./web:/var/www/html
+    ports:
+      - 80:80
+    depends_on:
+      - mysqlserver
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: phpmyadmin
+    restart: unless-stopped
+    ports:
+      - 81:80
+    links:
+      - mysqlserver:db
+    depends_on:
+      - mysqlserver
+    environment:
+      UPLOAD_LIMIT: 300M
+
+  ubuntu:
+    container_name: ubuntu
+    image: ubuntu
+    # restart: on-failure
+    # command: ["sleep","infinity"]
+
